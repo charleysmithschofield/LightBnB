@@ -112,7 +112,7 @@ const getAllProperties = (options, limit = 10) => {
 
   // start the query with all info before the WHERE clause
   let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) AS average_rating
+  SELECT properties.*, avg(property_reviews.rating) as property_rating
   FROM properties
   JOIN property_reviews ON properties.id = property_reviews.property_id
   WHERE 1=1
@@ -134,11 +134,11 @@ const getAllProperties = (options, limit = 10) => {
     filters.push(`properties.cost_per_night BETWEEN $${queryParams.length - 1} AND $${queryParams.length}`);
   }
 
-  // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
-  if (options.minimum_rating !== undefined) {
-    queryParams.push(options.minimum_rating);
-    filters.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
-  }
+  // // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
+  // if (options.minimum_rating !== undefined) {
+  //   queryParams.push(options.minimum_rating);
+  //   filters.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
+  // }
 
   // Combine all filter conditions with 'AND
   if (options.city) {
