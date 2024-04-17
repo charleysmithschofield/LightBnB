@@ -28,7 +28,7 @@ const getUserWithEmail = function(email) {
       return result.rows[0] || null;
     })
     .catch((err) => {
-      return Promise.reject(err.message);
+      return Promise.reject(err);
     });
 };
 
@@ -47,7 +47,7 @@ const getUserWithId = function(id) {
       return result.rows[0] || null;
     })
     .catch((err) => {
-      console.log(err.message);
+      return Promise.reject(err);
     });
 };
 
