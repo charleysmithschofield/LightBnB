@@ -134,11 +134,11 @@ const getAllProperties = (options, limit = 10) => {
     filters.push(`properties.cost_per_night BETWEEN $${queryParams.length - 1} AND $${queryParams.length}`);
   }
 
-  // // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
-  // if (options.minimum_rating !== undefined) {
-  //   queryParams.push(options.minimum_rating);
-  //   filters.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
-  // }
+  // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
+  }
 
   // Combine all filter conditions with 'AND
   if (options.city) {
