@@ -123,7 +123,7 @@ const getAllProperties = (options, limit = 10) => {
 
   // if owner is passed in, only return properties belonging to that owner
   if (options.owner) {
-    queryParams.push(`%{options.owner}%`);
+    queryParams.push(`$${options.owner}`);
     filters.push(`properties.owner_id = $${queryParams.length}`);
   }
 
