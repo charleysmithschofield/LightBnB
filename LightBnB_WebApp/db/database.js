@@ -107,12 +107,57 @@ const getAllReservations = function(guest_id, limit = 10) {
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = (options, limit = 10) => {
-  return pool
-    .query(`SELECT * FROM properties LIMIT $1`, [limit])
-    .then((result) => {
-      console.log(result.rows);
-      return result.rows;
-    })
+  // Array to hold the queries
+  const queryParams = [];
+
+  // start the query with all info before the WHERE clause
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) AS average_rating
+  FROM properties
+  JOIN property_reviews ON properties.id = property_reviews.property_id
+  WHERE 1=1
+  `;
+
+  // Array to hold the individual filter conditions
+  const filters = [];
+
+  // if owner is passed in, only return properties belonging to that owner
+  if (options.owner) {
+    queryParams.push(`%{options.owner}%`);
+    filters.push(`properties.owner_id = $${queryParams.length}`);
+  }
+
+  // if a minimum_price_per_night and a maximum_price_per_night, return properties in that range
+  if (options.minimum_price_per_night && options.maximum_price_per_night) {
+    queryParams.push(options.minimum_price_per_night * 100);
+    queryParams.push(options.maximum_price_per_night * 100);
+    filters.push(`properties.cost_per_night BETWEEN $${queryParams.length - 1} AND $${queryParams.length}`);
+  }
+
+  // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    filters.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
+  }
+
+  // Combine all filter conditions with 'AND
+  if (filters.length > 0) {
+    queryString += `WHERE ${filters.join(' AND ')}`;
+  }
+
+  // Add any query that comes after the WHERE clause
+  queryParams.push(limit);
+  queryString += `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length}`;
+
+  // Log everything to check it is done right
+  console.log(queryString.queryParams);
+
+  // Run the query
+  return pool.query(queryString, queryParams)
+    .then((res) => res.rows)
     .catch((err) => {
       console.log(err.message);
     });
@@ -140,3 +185,4 @@ module.exports = {
   getAllProperties,
   addProperty,
 };
+
