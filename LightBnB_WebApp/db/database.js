@@ -122,38 +122,44 @@ const getAllProperties = (options, limit = 10) => {
   const filters = [];
 
   // if owner is passed in, only return properties belonging to that owner
-  if (options.owner) {
-    queryParams.push(`$${options.owner}`);
+  if (options.owner_id) {
+    queryParams.push(options.owner_id);
     filters.push(`properties.owner_id = $${queryParams.length}`);
   }
 
   // if a minimum_price_per_night and a maximum_price_per_night, return properties in that range
-  if (options.minimum_price_per_night && options.maximum_price_per_night) {
-    queryParams.push(options.minimum_price_per_night * 100);
-    queryParams.push(options.maximum_price_per_night * 100);
+  if (options.minimum_price_per_night !== undefined && options.maximum_price_per_night !== undefined) {
+    queryParams.push(options.minimum_price_per_night);
+    queryParams.push(options.maximum_price_per_night);
     filters.push(`properties.cost_per_night BETWEEN $${queryParams.length - 1} AND $${queryParams.length}`);
   }
 
   // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
-  if (options.minimum_rating) {
+  if (options.minimum_rating !== undefined) {
     queryParams.push(options.minimum_rating);
     filters.push(`avg(property_reviews.rating) >= $${queryParams.length}`);
   }
 
   // Combine all filter conditions with 'AND
+  if (options.city) {
+    queryParams.push(`%${options.city}%`);
+    filters.push(`properties.city LIKE $${queryParams.length}`);
+  }
+
   if (filters.length > 0) {
-    queryString += `WHERE ${filters.join(' AND ')}`;
+    queryString += ` AND ${filters.join(' AND ')}`;
   }
 
   // Add any query that comes after the WHERE clause
   queryParams.push(limit);
   queryString += `
-  GROUP BY properties.id
-  ORDER BY cost_per_night
-  LIMIT $${queryParams.length}`;
+    GROUP BY properties.id
+    ORDER BY cost_per_night
+    LIMIT $${queryParams.length}`;
 
   // Log everything to check it is done right
-  console.log(queryString.queryParams);
+  console.log(queryString);
+  console.log(queryParams);
 
   // Run the query
   return pool.query(queryString, queryParams)
