@@ -140,7 +140,7 @@ const getAllProperties = (options, limit = 10) => {
     queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
   }
 
-  // Combine all filter conditions with 'AND
+  // Combine all filter conditions with 'AND'
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     filters.push(`properties.city LIKE $${queryParams.length}`);
@@ -150,13 +150,21 @@ const getAllProperties = (options, limit = 10) => {
     queryString += ` AND ${filters.join(' AND ')}`;
   }
 
-  // Add any query that comes after the WHERE clause
-  queryParams.push(limit);
+  // Group by must come before HAVING
   queryString += `
-    GROUP BY properties.id
-    ORDER BY cost_per_night
-    LIMIT $${queryParams.length}`;
+  GROUP BY properties.id
+  `;
 
+  // HAVING clause comes after GROUP BY
+  if (options.minimum_rating) {
+    queryParams.push(options.minimum_rating);
+    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
+  }
+
+  // Continue with the ORDER BY and LIMIT
+  queryString += `
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length}`;
   // Log everything to check it is done right
   console.log(queryString);
   console.log(queryParams);
