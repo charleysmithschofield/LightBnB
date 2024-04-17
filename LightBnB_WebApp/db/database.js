@@ -112,60 +112,57 @@ const getAllProperties = (options, limit = 10) => {
 
   // start the query with all info before the WHERE clause
   let queryString = `
-  SELECT properties.*, avg(property_reviews.rating) as property_rating
+  SELECT properties.*, AVG(property_reviews.rating) AS property_rating
   FROM properties
-  JOIN property_reviews ON properties.id = property_reviews.property_id
-  WHERE 1=1
+  LEFT JOIN property_reviews ON properties.id = property_reviews.property_id
   `;
 
   // Array to hold the individual filter conditions
   const filters = [];
 
-  // if owner is passed in, only return properties belonging to that owner
+  // if owner_id is passed in, only return properties belonging to that owner
   if (options.owner_id) {
     queryParams.push(options.owner_id);
     filters.push(`properties.owner_id = $${queryParams.length}`);
   }
 
-  // if a minimum_price_per_night and a maximum_price_per_night, return properties in that range
+  // if minimum_price_per_night and maximum_price_per_night are passed in, return properties within that price range
   if (options.minimum_price_per_night !== undefined && options.maximum_price_per_night !== undefined) {
-    queryParams.push(options.minimum_price_per_night);
-    queryParams.push(options.maximum_price_per_night);
+    queryParams.push(options.minimum_price_per_night * 100); // Convert to cents
+    queryParams.push(options.maximum_price_per_night * 100); // Convert to cents
     filters.push(`properties.cost_per_night BETWEEN $${queryParams.length - 1} AND $${queryParams.length}`);
   }
 
-  // if minimum_rating is passed in, only return properties with an average rating equal to or higher than that
-  if (options.minimum_rating) {
-    queryParams.push(options.minimum_rating);
-    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length}`;
-  }
-
-  // Combine all filter conditions with 'AND'
+  // if city is passed in, filter properties by city
   if (options.city) {
     queryParams.push(`%${options.city}%`);
     filters.push(`properties.city LIKE $${queryParams.length}`);
   }
 
+  // Combine all filter conditions with 'AND'
   if (filters.length > 0) {
-    queryString += ` AND ${filters.join(' AND ')}`;
+    queryString += ` WHERE ${filters.join(' AND ')}`;
   }
 
   // Group by must come before HAVING
   queryString += `
-  GROUP BY properties.id
-  `;
+  GROUP BY properties.id`;
 
-  // HAVING clause comes after GROUP BY
-  if (options.minimum_rating) {
+  // if minimum_rating is passed in, apply HAVING clause
+  if (options.minimum_rating !== undefined) {
+    queryString += ` HAVING AVG(property_reviews.rating) >= $${queryParams.length + 1}`;
     queryParams.push(options.minimum_rating);
-    queryString += `HAVING avg(property_reviews.rating) >= $${queryParams.length} `;
   }
 
-  // Continue with the ORDER BY and LIMIT
+  // Continue with ORDER BY and LIMIT
   queryString += `
-  ORDER BY cost_per_night
-  LIMIT $${queryParams.length}`;
-  // Log everything to check it is done right
+  ORDER BY properties.cost_per_night
+  LIMIT $${queryParams.length + 1};`;
+
+  // Add limit to queryParams
+  queryParams.push(limit);
+
+  // Console log to ensure it's correct
   console.log(queryString);
   console.log(queryParams);
 
@@ -173,7 +170,8 @@ const getAllProperties = (options, limit = 10) => {
   return pool.query(queryString, queryParams)
     .then((res) => res.rows)
     .catch((err) => {
-      console.log(err.message);
+      console.error('Error executing query:', err.message);
+      throw err; // Re-throw error to be caught by caller
     });
 };
 
