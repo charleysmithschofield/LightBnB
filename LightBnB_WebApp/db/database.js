@@ -182,7 +182,9 @@ const getAllProperties = (options, limit = 10) => {
  * @return {Promise<{}>} A promise to the property.
  */
 const addProperty = function(property) {
+  // Creating a promise for asynchronous operation
   return new Promise((resolve, reject) => {
+    // Destructing the property object to extract its properties
     const {
       owner_id,
       title,
@@ -200,6 +202,7 @@ const addProperty = function(property) {
       number_of_bedrooms
     } = property;
 
+    // SQL query to insert property data into the 'properties' table, use parameterized values for security
     const query = `
       INSERT INTO properties (
         owner_id,
@@ -221,6 +224,7 @@ const addProperty = function(property) {
       RETURNING *;
     `;
 
+    // Array of values corresponding to the placeholders in the SQL query
     const values = [
       owner_id,
       title,
@@ -238,10 +242,13 @@ const addProperty = function(property) {
       number_of_bedrooms
     ];
 
+    // Execution of the SQL query using the pool object
     pool.query(query, values, (error, result) => {
+      // Check for errors, if found reject the Promise
       if (error) {
         reject(error);
       } else {
+        // If no errors, resolve the Promise
         resolve(result.rows[0]);
       }
     });
