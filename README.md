@@ -41,19 +41,19 @@ LightBnB was developed using code provided by Lighthouse Labs, employing a stack
 ## LightBnB Features:
 
 ### Sign Up
-![Sign Up](<photos/LightBNB - Sign Up.png>)
+![Sign Up](<photos/Sign Up.png>)
 
 ### Login 
-![Login](<photos/LightBNB - Login.png>)
+![Login](photos/Login.png)
 
 ### Search
-![Search](<photos/LightBnB - Search.png>)
+![Search](photos/Search.png)
 
 ### Create Listings
-![Create Listings](<photos/LightBnB - Create Listing.png>)
+![Create Listings](<photos/Create Listings.png>)
 
 ### Listings
-![Listings](<photos/LightBnB - Listings.png>)
+![Listings](<photos/My Listings.png>)
 
 ### Reservations
-![Reservation](<photos/LightBnB - Reservations.png>)
+![Reservations](<photos/My Reservations.png>)
