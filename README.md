@@ -41,19 +41,37 @@ LightBnB was developed using code provided by Lighthouse Labs, employing a stack
 ## LightBnB Features:
 
 ### Sign Up
+Sign up to start your LightBnB journey!
+
 ![Sign Up](<photos/Sign Up.png>)
 
+
 ### Login 
+Login to your profile to create new listings, review your current ones and see your reservations.
+
 ![Login](photos/Login.png)
 
+
 ### Search
+Search for a BnB by city, price range and rating!
+
 ![Search](photos/Search.png)
 
+
 ### Create Listings
+Want to list your own property? We've got you covered!
+
+You can add your own description, photos and property information to make your property come to life!
+
 ![Create Listings](<photos/Create Listings.png>)
 
+
 ### Listings
+Keep track of your listings all in one place!
+
 ![Listings](<photos/My Listings.png>)
 
 ### Reservations
+Lookings forward to your get-away? You can find your reservations here!
+
 ![Reservations](<photos/My Reservations.png>)
